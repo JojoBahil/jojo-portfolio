@@ -10,8 +10,8 @@ A production-ready portfolio website built with Next.js, featuring a modern desi
 - **SEO Optimized**: Complete meta tags, Open Graph, Twitter Cards, and JSON-LD structured data
 - **Admin Dashboard**: Full CRUD interface for managing portfolio content
 - **Authentication**: Secure admin login with session management
-- **Database**: SQLite with Prisma ORM for easy data management
-- **Media Management**: Cloudinary integration for image/video uploads
+- **Database**: MySQL with Prisma ORM for easy data management
+- **Media Management**: Local file upload system for images
 - **Accessibility**: WCAG compliant with keyboard navigation and screen reader support
 
 ## 🛠 Tech Stack
@@ -21,15 +21,15 @@ A production-ready portfolio website built with Next.js, featuring a modern desi
 - **Animations**: Framer Motion
 - **Icons**: Lucide React
 - **Database**: MySQL + Prisma
-- **Authentication**: Iron Session
-- **Media**: Cloudinary
+- **Authentication**: Cookie-based sessions
+- **Media**: Local file storage
 - **Deployment**: Vercel Ready
 
 ## 📋 Prerequisites
 
 - Node.js 18+ 
 - npm or yarn
-- Cloudinary account (for media uploads)
+- MySQL database
 
 ## 🚀 Quick Start
 
@@ -55,11 +55,7 @@ Edit `.env.local` with your values:
 ADMIN_USER=admin
 ADMIN_PASS=your-secure-password
 DATABASE_URL="mysql://username:password@localhost:3306/portfolio_db"
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
 NEXT_PUBLIC_SITE_URL=https://your-domain.com
-SESSION_PASSWORD=your-super-secret-session-password
 ```
 
 ### 3. Database Setup
@@ -158,7 +154,7 @@ Access the admin dashboard at `/admin` with your configured credentials.
 - **Projects Management**: Create, edit, and delete portfolio projects
 - **Experience Management**: Manage work experience entries
 - **Tech Stack**: Add and organize technologies
-- **Media Library**: Upload and manage images/videos via Cloudinary
+- **Media Library**: Upload and manage images locally
 - **Links Management**: Update social and professional links
 
 ### Security:
@@ -202,11 +198,7 @@ Access the admin dashboard at `/admin` with your configured credentials.
    - `ADMIN_USER`
    - `ADMIN_PASS`
    - `DATABASE_URL`
-   - `CLOUDINARY_CLOUD_NAME`
-   - `CLOUDINARY_API_KEY`
-   - `CLOUDINARY_API_SECRET`
    - `NEXT_PUBLIC_SITE_URL`
-   - `SESSION_PASSWORD`
 
 3. **Database**:
    For production, consider using a hosted MySQL database like:
@@ -283,7 +275,7 @@ For support and questions:
 - Tailwind CSS for the utility-first CSS framework
 - Framer Motion for smooth animations
 - Prisma for the excellent ORM
-- Cloudinary for media management
+- Local file storage for media management
 
 ---
 
