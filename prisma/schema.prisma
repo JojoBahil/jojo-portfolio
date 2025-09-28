@@ -1,0 +1,74 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  summary     String
+  description String
+  tags        String   // JSON string of string[]
+  repoUrl     String?
+  liveUrl     String?
+  coverId     String?
+  mediaIds    String   @default("[]") // JSON string of string[]
+  projectType String   @default("developed") // "developed" | "supervised"
+  order       Int      @default(0) // For custom ordering
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Experience {
+  id          String   @id @default(cuid())
+  role        String
+  company     String
+  startDate   DateTime
+  endDate     DateTime?
+  summary     String
+  highlights  String   @default("[]") // JSON string of string[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Tech {
+  id     String @id @default(cuid())
+  label  String @unique
+  level  String?
+  group  String?
+}
+
+model Media {
+  id        String   @id @default(cuid())
+  title     String
+  publicId  String
+  type      String   // "image" | "video"
+  createdAt DateTime @default(now())
+}
+
+model Link {
+  id    String @id @default(cuid())
+  label String
+  url   String
+}
+
+model Training {
+  id          String   @id @default(cuid())
+  title       String
+  institution String
+  startDate   DateTime
+  endDate     DateTime?
+  description String?
+  certificate String?  // URL to certificate or file path
+  order       Int      @default(0) // For custom ordering
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
