@@ -63,7 +63,7 @@ export default function Contact({ links = [] }) {
         <div>
           <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Get In Touch</h3>
           <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-            I'm always interested in new opportunities and exciting projects. 
+            I&apos;m always interested in new opportunities and exciting projects. 
             Whether you have a question or just want to say hi, feel free to reach out!
           </p>
         </div>
