@@ -521,20 +521,14 @@ export default function AdminDashboard() {
       const formData = new FormData()
       formData.append('file', file)
 
-      // Generate a unique filename to avoid conflicts
-      const timestamp = Date.now()
-      const fileExtension = file.name.split('.').pop()
-      const cleanFileName = file.name
-        .replace(/[^a-zA-Z0-9.-]/g, '-')
-        .toLowerCase()
-      const uniqueFileName = `${timestamp}-${cleanFileName}`
+      // Determine which upload endpoint to use based on environment
+      const isProduction = process.env.NODE_ENV === 'production'
+      const uploadEndpoint = isProduction ? '/api/upload' : '/api/upload-local'
 
-      formData.append('filename', uniqueFileName)
+      console.log('Uploading file to:', uploadEndpoint)
 
-      console.log('Uploading file:', uniqueFileName)
-
-      // Upload via our API route
-      const response = await fetch('/api/upload-local', {
+      // Upload via the appropriate API route
+      const response = await fetch(uploadEndpoint, {
         method: 'POST',
         body: formData,
       })
@@ -542,7 +536,10 @@ export default function AdminDashboard() {
       if (response.ok) {
         const result = await response.json()
         console.log('Upload successful:', result)
-        handleInputChange('coverId', result.imagePath)
+
+        // Handle different response formats
+        const imageUrl = result.url || result.imagePath
+        handleInputChange('coverId', imageUrl)
         alert('Image uploaded successfully!')
       } else {
         const errorData = await response.json()
@@ -866,11 +863,7 @@ export default function AdminDashboard() {
                           {formData.coverId && (
                             <div className="flex justify-center">
                               <img
-                                src={
-                                  formData.coverId.startsWith('http')
-                                    ? formData.coverId
-                                    : formData.coverId
-                                }
+                                src={formData.coverId}
                                 alt="Cover preview"
                                 className="h-48 w-full max-w-sm rounded-lg border border-gray-300 object-cover dark:border-gray-600"
                                 onError={(e) => {
@@ -933,14 +926,21 @@ export default function AdminDashboard() {
                                 handleInputChange('coverId', e.target.value)
                               }
                               className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                              placeholder="e.g., /images/project-cover.jpg"
+                              placeholder={
+                                process.env.NODE_ENV === 'production'
+                                  ? 'e.g., https://res.cloudinary.com/...'
+                                  : 'e.g., /images/project-cover.jpg'
+                              }
                             />
                           </div>
 
                           {/* Info */}
                           <div className="rounded bg-gray-100 p-2 text-xs text-gray-500 dark:bg-gray-800 dark:text-gray-400">
                             <div>
-                              📁 Upload Method: Automatic to public/images/
+                              📁 Upload Method:{' '}
+                              {process.env.NODE_ENV === 'production'
+                                ? 'Cloudinary (Production)'
+                                : 'Local files (Development)'}
                             </div>
                             <div>
                               ✅ Files are automatically saved with unique names
