@@ -231,6 +231,18 @@ export default function AdminDashboard() {
       }
     }
 
+    // Convert dates to YYYY-MM-DD format for date inputs
+    if (activeTab === TABS.EXPERIENCE || activeTab === TABS.TRAININGS) {
+      if (item.startDate) {
+        const startDate = new Date(item.startDate)
+        formData.startDate = startDate.toISOString().split('T')[0]
+      }
+      if (item.endDate) {
+        const endDate = new Date(item.endDate)
+        formData.endDate = endDate.toISOString().split('T')[0]
+      }
+    }
+
     setFormData(formData)
     setShowForm(true)
   }

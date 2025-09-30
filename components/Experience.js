@@ -10,24 +10,55 @@ export default function Experience({ experiences = [] }) {
   const isInView = useInView(ref, { once: true, margin: '-100px' })
 
   const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('en-US', {
+    // Handle both string and Date object inputs
+    const dateObj = typeof date === 'string' ? new Date(date) : date
+
+    // Use UTC methods to avoid timezone issues
+    const year = dateObj.getUTCFullYear()
+    const month = dateObj.getUTCMonth()
+
+    return new Date(year, month).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
     })
   }
 
   const getDuration = (startDate, endDate) => {
-    const start = new Date(startDate)
-    const end = endDate ? new Date(endDate) : new Date()
-    const diffTime = Math.abs(end - start)
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    // Handle both string and Date object inputs
+    const start =
+      typeof startDate === 'string' ? new Date(startDate) : startDate
+    const end = endDate
+      ? typeof endDate === 'string'
+        ? new Date(endDate)
+        : endDate
+      : new Date()
+
+    // Use UTC methods to avoid timezone issues
+    const startYear = start.getUTCFullYear()
+    const startMonth = start.getUTCMonth()
+    const startDay = start.getUTCDate()
+    const endYear = end.getUTCFullYear()
+    const endMonth = end.getUTCMonth()
+    const endDay = end.getUTCDate()
+
+    // Calculate the difference in days (inclusive)
+    const startDateObj = new Date(startYear, startMonth, startDay)
+    const endDateObj = new Date(endYear, endMonth, endDay)
+    const diffTime = Math.abs(endDateObj - startDateObj)
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1 // +1 for inclusive counting
+
+    // Convert days to months and years for display
     const years = Math.floor(diffDays / 365)
-    const months = Math.floor((diffDays % 365) / 30)
+    const remainingDays = diffDays % 365
+    const months = Math.round(remainingDays / 30)
+
+    // Ensure minimum of 1 month for any experience
+    const displayMonths = Math.max(1, months)
 
     if (years > 0) {
-      return months > 0 ? `${years}y ${months}m` : `${years}y`
+      return displayMonths > 0 ? `${years}y ${displayMonths}m` : `${years}y`
     }
-    return `${months}m`
+    return `${displayMonths}m`
   }
 
   const parseHighlights = (highlightsString) => {
