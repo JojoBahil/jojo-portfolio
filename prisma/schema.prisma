@@ -33,8 +33,8 @@ model Experience {
   company     String
   startDate   DateTime
   endDate     DateTime?
-  summary     String
-  highlights  String   @default("[]") // JSON string of string[]
+  summary     String   @db.Text
+  highlights  String   @db.Text @default("[]") // JSON string of string[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
