@@ -31,15 +31,35 @@ export async function POST(request) {
     try {
       await mkdir(imagesDir, { recursive: true })
     } catch (error) {
-      // Directory might already exist, that's fine
+      console.error('Error creating directory:', error)
+      return NextResponse.json({ 
+        error: 'Failed to create upload directory', 
+        details: error.message 
+      }, { status: 500 })
     }
 
     // Write file to public/images directory
     const filePath = join(imagesDir, filename)
-    await writeFile(filePath, buffer)
+    try {
+      await writeFile(filePath, buffer)
+    } catch (error) {
+      console.error('Error writing file:', error)
+      return NextResponse.json({ 
+        error: 'Failed to save file', 
+        details: error.message 
+      }, { status: 500 })
+    }
 
-    // Return the public URL path
-    const imagePath = `/images/${filename}`
+    // Get the base URL for production
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+    const imagePath = `${baseUrl}/images/${filename}`
+
+    console.log('File uploaded successfully:', {
+      filename,
+      path: filePath,
+      url: imagePath,
+      size: file.size
+    })
 
     return NextResponse.json({
       success: true,

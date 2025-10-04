@@ -389,8 +389,8 @@ export default function AdminDashboard() {
 
       console.log('Uploading file:', uniqueFileName)
       
-      // Upload via our API route
-      const response = await fetch('/api/upload-local', {
+      // Upload via our API route (switch to /api/upload for Cloudinary)
+      const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
       })
@@ -398,7 +398,7 @@ export default function AdminDashboard() {
       if (response.ok) {
         const result = await response.json()
         console.log('Upload successful:', result)
-        handleInputChange('coverId', result.imagePath)
+        handleInputChange('coverId', result.url)
         alert('Image uploaded successfully!')
       } else {
         const errorData = await response.json()
