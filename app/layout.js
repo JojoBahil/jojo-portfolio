@@ -5,6 +5,7 @@ import ParallaxBackground from '@/components/ParallaxBackground'
 import ToastContainer from '@/components/ToastContainer'
 import { ToastProvider } from '@/contexts/ToastContext'
 import JsonLd from '@/components/JsonLd'
+import VisitorTracker from '@/components/VisitorTracker'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -126,6 +127,7 @@ export default function RootLayout({ children }) {
       </head>
       <body className={inter.className}>
         <ToastProvider>
+          <VisitorTracker />
           <a
             href="#main-content"
             className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-blue-600 text-white px-4 py-2 rounded-lg z-50"

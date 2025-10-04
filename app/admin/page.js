@@ -16,6 +16,9 @@ import {
   EyeOff,
   Home,
   GripVertical,
+  Users,
+  TrendingUp,
+  Calendar,
 } from 'lucide-react'
 import {
   DndContext,
@@ -125,6 +128,12 @@ export default function AdminDashboard() {
   const [showForm, setShowForm] = useState(false)
   const [formData, setFormData] = useState({})
   const [isDragOver, setIsDragOver] = useState(false)
+  const [visitorStats, setVisitorStats] = useState({
+    totalVisitors: 0,
+    uniqueVisitors: 0,
+    todayVisitors: 0,
+    weekVisitors: 0,
+  })
   const router = useRouter()
 
   // Drag and drop sensors
@@ -164,6 +173,7 @@ export default function AdminDashboard() {
         techRes,
         mediaRes,
         linksRes,
+        visitorRes,
       ] = await Promise.all([
         fetch('/api/admin/projects'),
         fetch('/api/admin/experience'),
@@ -171,9 +181,10 @@ export default function AdminDashboard() {
         fetch('/api/admin/tech'),
         fetch('/api/admin/media'),
         fetch('/api/admin/links'),
+        fetch('/api/visitor'),
       ])
 
-      const [projects, experiences, trainings, tech, media, links] =
+      const [projects, experiences, trainings, tech, media, links, visitorStats] =
         await Promise.all([
           projectsRes.json(),
           experiencesRes.json(),
@@ -181,6 +192,7 @@ export default function AdminDashboard() {
           techRes.json(),
           mediaRes.json(),
           linksRes.json(),
+          visitorRes.json(),
         ])
 
       setData({
@@ -191,6 +203,8 @@ export default function AdminDashboard() {
         media,
         links,
       })
+      
+      setVisitorStats(visitorStats)
     } catch (error) {
       console.error('Error fetching data:', error)
     }
@@ -626,6 +640,21 @@ export default function AdminDashboard() {
               Admin Dashboard
             </h1>
             <div className="flex items-center space-x-4">
+              {/* Visitor Counter */}
+              <div className="flex items-center space-x-4 text-sm">
+                <div className="flex items-center space-x-1 text-gray-600 dark:text-gray-400">
+                  <Users className="h-4 w-4" />
+                  <span>{visitorStats.totalVisitors}</span>
+                </div>
+                <div className="flex items-center space-x-1 text-gray-600 dark:text-gray-400">
+                  <TrendingUp className="h-4 w-4" />
+                  <span>{visitorStats.uniqueVisitors}</span>
+                </div>
+                <div className="flex items-center space-x-1 text-gray-600 dark:text-gray-400">
+                  <Calendar className="h-4 w-4" />
+                  <span>{visitorStats.todayVisitors}</span>
+                </div>
+              </div>
               <Link
                 href="/"
                 className="flex items-center px-4 py-2 text-gray-700 transition-colors duration-200 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400"
