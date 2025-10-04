@@ -94,5 +94,5 @@ jspm_packages/
 Thumbs.db
 
 # Prisma
-prisma/migrations/
+# prisma/migrations/ - Commented out to include migrations in git for production
 
