@@ -50,16 +50,12 @@ export async function POST(request) {
       }, { status: 500 })
     }
 
-    // Get the base URL for production
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-    const imagePath = `${baseUrl}/images/${filename}`
+    // Use relative path for local development, absolute URL for production
+    const isProduction = process.env.NODE_ENV === 'production'
+    const imagePath = isProduction 
+      ? `${process.env.NEXT_PUBLIC_SITE_URL}/images/${filename}`
+      : `/images/${filename}`
 
-    console.log('File uploaded successfully:', {
-      filename,
-      path: filePath,
-      url: imagePath,
-      size: file.size
-    })
 
     return NextResponse.json({
       success: true,

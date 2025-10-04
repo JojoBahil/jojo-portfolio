@@ -545,7 +545,6 @@ export default function AdminDashboard() {
       const isProduction = process.env.NODE_ENV === 'production'
       const uploadEndpoint = isProduction ? '/api/upload' : '/api/upload-local'
 
-      console.log('Uploading file to:', uploadEndpoint)
 
       // Upload via the appropriate API route
       const response = await fetch(uploadEndpoint, {
@@ -555,7 +554,6 @@ export default function AdminDashboard() {
 
       if (response.ok) {
         const result = await response.json()
-        console.log('Upload successful:', result)
 
         // Handle different response formats
         const imageUrl = result.url || result.imagePath
@@ -892,7 +890,10 @@ export default function AdminDashboard() {
                                 }}
                               />
                               <div className="flex hidden h-48 w-full max-w-sm items-center justify-center rounded-lg border border-gray-300 bg-gray-200 text-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-400">
-                                Image not found
+                                <div className="text-center">
+                                  <div className="text-sm font-medium">Image not found</div>
+                                  <div className="text-xs mt-1">Path: {formData.coverId}</div>
+                                </div>
                               </div>
                             </div>
                           )}
