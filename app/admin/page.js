@@ -553,6 +553,7 @@ export default function AdminDashboard() {
 
       if (response.ok) {
         const result = await response.json()
+        console.log('Upload response:', result)
 
         // Handle different response formats
         const imageUrl = result.url || result.imagePath
@@ -560,8 +561,9 @@ export default function AdminDashboard() {
           alert('Upload successful but no image URL returned. Please try again.')
           return
         }
+        console.log('Setting image URL:', imageUrl)
         handleInputChange('coverId', imageUrl)
-        alert('Image uploaded successfully!')
+        alert(`Image uploaded successfully!\nPath: ${imageUrl}`)
       } else {
         const errorData = await response.json()
         console.error('Upload failed:', errorData)
@@ -939,20 +941,39 @@ export default function AdminDashboard() {
                             </label>
                           </div>
 
-                          {/* Manual Public ID Input (Optional) */}
+                          {/* Manual Image Path Input (Optional) */}
                           <div>
                             <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">
-                              Or enter Cloudinary Public ID manually:
+                              Or enter image path manually:
                             </label>
-                            <input
-                              type="text"
-                              value={formData.coverId || ''}
-                              onChange={(e) =>
-                                handleInputChange('coverId', e.target.value)
-                              }
-                              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                              placeholder="e.g., /images/project-cover.jpg"
-                            />
+                            <div className="flex space-x-2">
+                              <input
+                                type="text"
+                                value={formData.coverId || ''}
+                                onChange={(e) =>
+                                  handleInputChange('coverId', e.target.value)
+                                }
+                                className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                placeholder="e.g., /images/project-cover.jpg"
+                              />
+                              {formData.coverId && (
+                                <button
+                                  type="button"
+                                  onClick={async () => {
+                                    try {
+                                      const response = await fetch(`/api/check-image?path=${encodeURIComponent(formData.coverId)}`)
+                                      const result = await response.json()
+                                      alert(`Image Check:\nPath: ${result.path}\nExists: ${result.exists}\nFull Path: ${result.fullPath}`)
+                                    } catch (error) {
+                                      alert(`Error checking image: ${error.message}`)
+                                    }
+                                  }}
+                                  className="px-3 py-2 bg-blue-600 text-white rounded-lg text-xs hover:bg-blue-700"
+                                >
+                                  Check
+                                </button>
+                              )}
+                            </div>
                           </div>
 
                           {/* Info */}

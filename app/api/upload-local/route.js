@@ -42,6 +42,11 @@ export async function POST(request) {
     const filePath = join(imagesDir, filename)
     try {
       await writeFile(filePath, buffer)
+      console.log('File written successfully:', {
+        filename,
+        filePath,
+        size: buffer.length
+      })
     } catch (error) {
       console.error('Error writing file:', error)
       return NextResponse.json({ 
