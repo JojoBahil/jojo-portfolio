@@ -4,18 +4,18 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { 
-  LogOut, 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Save, 
-  X, 
+import {
+  LogOut,
+  Plus,
+  Edit,
+  Trash2,
+  Save,
+  X,
   Upload,
   Eye,
   EyeOff,
   Home,
-  GripVertical
+  GripVertical,
 } from 'lucide-react'
 import {
   DndContext,
@@ -31,9 +31,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
-import {
-  useSortable,
-} from '@dnd-kit/sortable'
+import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 
 const TABS = {
@@ -66,47 +64,50 @@ function SortableItem({ item, activeTab, onEdit, onDelete }) {
     <div
       ref={setNodeRef}
       style={style}
-      className={`px-6 py-4 flex items-center justify-between ${
+      className={`flex items-center justify-between px-6 py-4 ${
         isDragging ? 'bg-blue-50 dark:bg-blue-900/20' : ''
       }`}
     >
-      <div className="flex items-center space-x-3 flex-1">
+      <div className="flex flex-1 items-center space-x-3">
         {(activeTab === TABS.PROJECTS || activeTab === TABS.TRAININGS) && (
           <div
             {...attributes}
             {...listeners}
-            className="cursor-grab hover:cursor-grabbing p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            className="cursor-grab p-1 text-gray-400 hover:cursor-grabbing hover:text-gray-600 dark:hover:text-gray-300"
           >
-            <GripVertical className="w-4 h-4" />
+            <GripVertical className="h-4 w-4" />
           </div>
         )}
         <div className="flex-1">
           <h3 className="text-sm font-medium text-gray-900 dark:text-white">
             {item.title || item.role || item.label || item.name}
           </h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            {item.summary || item.company || item.institution || item.url || item.description}
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            {item.summary ||
+              item.company ||
+              item.institution ||
+              item.url ||
+              item.description}
           </p>
         </div>
       </div>
       <div className="flex items-center space-x-2">
         <button
           onClick={() => onEdit(item)}
-          className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
+          className="p-2 text-gray-400 transition-colors duration-200 hover:text-blue-600 dark:hover:text-blue-400"
         >
-          <Edit className="w-4 h-4" />
+          <Edit className="h-4 w-4" />
         </button>
         <button
           onClick={() => onDelete(item.id)}
-          className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors duration-200"
+          className="p-2 text-gray-400 transition-colors duration-200 hover:text-red-600 dark:hover:text-red-400"
         >
-          <Trash2 className="w-4 h-4" />
+          <Trash2 className="h-4 w-4" />
         </button>
       </div>
     </div>
   )
 }
-
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('projects')
@@ -156,7 +157,14 @@ export default function AdminDashboard() {
 
   const fetchData = async () => {
     try {
-      const [projectsRes, experiencesRes, trainingsRes, techRes, mediaRes, linksRes] = await Promise.all([
+      const [
+        projectsRes,
+        experiencesRes,
+        trainingsRes,
+        techRes,
+        mediaRes,
+        linksRes,
+      ] = await Promise.all([
         fetch('/api/admin/projects'),
         fetch('/api/admin/experience'),
         fetch('/api/admin/trainings'),
@@ -165,16 +173,24 @@ export default function AdminDashboard() {
         fetch('/api/admin/links'),
       ])
 
-      const [projects, experiences, trainings, tech, media, links] = await Promise.all([
-        projectsRes.json(),
-        experiencesRes.json(),
-        trainingsRes.json(),
-        techRes.json(),
-        mediaRes.json(),
-        linksRes.json(),
-      ])
+      const [projects, experiences, trainings, tech, media, links] =
+        await Promise.all([
+          projectsRes.json(),
+          experiencesRes.json(),
+          trainingsRes.json(),
+          techRes.json(),
+          mediaRes.json(),
+          linksRes.json(),
+        ])
 
-      setData({ projects, experience: experiences, trainings, tech, media, links })
+      setData({
+        projects,
+        experience: experiences,
+        trainings,
+        tech,
+        media,
+        links,
+      })
     } catch (error) {
       console.error('Error fetching data:', error)
     }
@@ -191,10 +207,10 @@ export default function AdminDashboard() {
 
   const handleEdit = (item) => {
     setEditingItem(item)
-    
+
     // Process the item data for the form
     const formData = { ...item }
-    
+
     // Convert tags from JSON string to comma-separated string for editing
     if (activeTab === TABS.PROJECTS && item.tags) {
       try {
@@ -204,7 +220,29 @@ export default function AdminDashboard() {
         formData.tags = item.tags
       }
     }
-    
+
+    // Convert highlights from JSON string to newline-separated string for editing
+    if (activeTab === TABS.EXPERIENCE && item.highlights) {
+      try {
+        const highlightsArray = JSON.parse(item.highlights)
+        formData.highlights = highlightsArray.join('\n')
+      } catch (error) {
+        formData.highlights = item.highlights
+      }
+    }
+
+    // Convert dates to YYYY-MM-DD format for date inputs
+    if (activeTab === TABS.EXPERIENCE || activeTab === TABS.TRAININGS) {
+      if (item.startDate) {
+        const startDate = new Date(item.startDate)
+        formData.startDate = startDate.toISOString().split('T')[0]
+      }
+      if (item.endDate) {
+        const endDate = new Date(item.endDate)
+        formData.endDate = endDate.toISOString().split('T')[0]
+      }
+    }
+
     setFormData(formData)
     setShowForm(true)
   }
@@ -220,31 +258,55 @@ export default function AdminDashboard() {
       // Basic validation for trainings
       if (activeTab === TABS.TRAININGS) {
         if (!formData.title || !formData.institution || !formData.startDate) {
-          alert('Please fill in all required fields: Title, Institution, and Start Date')
+          alert(
+            'Please fill in all required fields: Title, Institution, and Start Date'
+          )
           return
         }
       }
 
-      const endpoint = editingItem 
+      // Basic validation for experience
+      if (activeTab === TABS.EXPERIENCE) {
+        if (
+          !formData.role ||
+          !formData.company ||
+          !formData.startDate ||
+          !formData.summary
+        ) {
+          alert(
+            'Please fill in all required fields: Role, Company, Start Date, and Summary'
+          )
+          return
+        }
+      }
+
+      const endpoint = editingItem
         ? `/api/admin/${activeTab}/${editingItem.id}`
         : `/api/admin/${activeTab}`
-      
+
       const method = editingItem ? 'PUT' : 'POST'
-      
+
       // Process form data before sending
       const dataToSend = { ...formData }
-      
+
       // Convert tags from comma-separated string to JSON array for projects
       if (activeTab === TABS.PROJECTS && dataToSend.tags) {
         const tagsArray = dataToSend.tags
           .split(',')
-          .map(tag => tag.trim())
-          .filter(tag => tag.length > 0)
+          .map((tag) => tag.trim())
+          .filter((tag) => tag.length > 0)
         dataToSend.tags = JSON.stringify(tagsArray)
       }
-      
-      console.log('Sending data:', dataToSend) // Debug log
-      
+
+      // Convert highlights from newline-separated string to JSON array for experience
+      if (activeTab === TABS.EXPERIENCE && dataToSend.highlights) {
+        const highlightsArray = dataToSend.highlights
+          .split('\n')
+          .map((highlight) => highlight.trim().replace(/^[•\-\*]\s*/, '')) // Remove bullet points
+          .filter((highlight) => highlight.length > 0)
+        dataToSend.highlights = JSON.stringify(highlightsArray)
+      }
+
       const response = await fetch(endpoint, {
         method,
         headers: { 'Content-Type': 'application/json' },
@@ -256,15 +318,19 @@ export default function AdminDashboard() {
         setEditingItem(null)
         setFormData({})
         fetchData()
-        alert('Training saved successfully!')
+        alert(
+          `${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} saved successfully!`
+        )
       } else {
         const errorData = await response.json()
         console.error('Save error:', errorData)
-        alert(`Error saving training: ${errorData.error || 'Unknown error'}`)
+        alert(
+          `Error saving ${activeTab}: ${errorData.error || 'Unknown error'}`
+        )
       }
     } catch (error) {
       console.error('Save error:', error)
-      alert(`Error saving training: ${error.message}`)
+      alert(`Error saving ${activeTab}: ${error.message}`)
     }
   }
 
@@ -284,23 +350,109 @@ export default function AdminDashboard() {
     }
   }
 
+  const handleCleanupExperience = async () => {
+    if (!confirm('This will fix corrupted highlights data. Continue?')) return
+
+    try {
+      const response = await fetch('/api/admin/experience/cleanup', {
+        method: 'POST',
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        alert(
+          `Successfully fixed ${result.fixedCount} corrupted experience entries!`
+        )
+        fetchData() // Refresh the data
+      } else {
+        alert('Failed to cleanup experience data')
+      }
+    } catch (error) {
+      console.error('Cleanup error:', error)
+      alert('Error during cleanup')
+    }
+  }
+
+  const handleFixDatabase = async () => {
+    if (
+      !confirm(
+        'This will completely rebuild the experience database with proper data. This will DELETE all existing experience entries and recreate them. Continue?'
+      )
+    )
+      return
+
+    try {
+      const response = await fetch('/api/admin/experience/fix-database', {
+        method: 'POST',
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        alert(
+          `Successfully rebuilt database! Created ${result.createdCount} experience entries with proper data.`
+        )
+        fetchData() // Refresh the data
+      } else {
+        const errorData = await response.json()
+        alert(`Failed to fix database: ${errorData.error}`)
+      }
+    } catch (error) {
+      console.error('Database fix error:', error)
+      alert('Error during database fix')
+    }
+  }
+
+  const handleForceRebuild = async () => {
+    if (
+      !confirm(
+        'FORCE REBUILD: This will aggressively delete and recreate ALL experience data. This is the most thorough fix available. Continue?'
+      )
+    )
+      return
+
+    try {
+      const response = await fetch('/api/admin/experience/force-rebuild', {
+        method: 'POST',
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        alert(
+          `FORCE rebuild completed! Created ${result.createdCount} experience entries.`
+        )
+        fetchData() // Refresh the data
+      } else {
+        const errorData = await response.json()
+        alert(`Failed to force rebuild: ${errorData.error}`)
+      }
+    } catch (error) {
+      console.error('Force rebuild error:', error)
+      alert('Error during force rebuild')
+    }
+  }
+
   const handleDragEnd = async (event) => {
     const { active, over } = event
 
-    if (active.id !== over.id && (activeTab === TABS.PROJECTS || activeTab === TABS.TRAININGS)) {
+    if (
+      active.id !== over.id &&
+      (activeTab === TABS.PROJECTS || activeTab === TABS.TRAININGS)
+    ) {
       if (activeTab === TABS.PROJECTS) {
-        const oldIndex = data.projects.findIndex((item) => item.id === active.id)
+        const oldIndex = data.projects.findIndex(
+          (item) => item.id === active.id
+        )
         const newIndex = data.projects.findIndex((item) => item.id === over.id)
 
         const newProjects = arrayMove(data.projects, oldIndex, newIndex)
-        
+
         // Update local state immediately for better UX
-        setData(prev => ({ ...prev, projects: newProjects }))
+        setData((prev) => ({ ...prev, projects: newProjects }))
 
         // Update order values and send to server
         const projectOrders = newProjects.map((project, index) => ({
           id: project.id,
-          order: index + 1
+          order: index + 1,
         }))
 
         try {
@@ -320,18 +472,20 @@ export default function AdminDashboard() {
           fetchData()
         }
       } else if (activeTab === TABS.TRAININGS) {
-        const oldIndex = data.trainings.findIndex((item) => item.id === active.id)
+        const oldIndex = data.trainings.findIndex(
+          (item) => item.id === active.id
+        )
         const newIndex = data.trainings.findIndex((item) => item.id === over.id)
 
         const newTrainings = arrayMove(data.trainings, oldIndex, newIndex)
-        
+
         // Update local state immediately for better UX
-        setData(prev => ({ ...prev, trainings: newTrainings }))
+        setData((prev) => ({ ...prev, trainings: newTrainings }))
 
         // Update order values and send to server
         const trainingOrders = newTrainings.map((training, index) => ({
           id: training.id,
-          order: index + 1
+          order: index + 1,
         }))
 
         try {
@@ -355,7 +509,7 @@ export default function AdminDashboard() {
   }
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [field]: value,
     }))
@@ -387,10 +541,14 @@ export default function AdminDashboard() {
       
       formData.append('filename', uniqueFileName)
 
-      console.log('Uploading file:', uniqueFileName)
-      
-      // Upload via our API route (switch to /api/upload for Cloudinary)
-      const response = await fetch('/api/upload', {
+      // Determine which upload endpoint to use based on environment
+      const isProduction = process.env.NODE_ENV === 'production'
+      const uploadEndpoint = isProduction ? '/api/upload' : '/api/upload-local'
+
+      console.log('Uploading file to:', uploadEndpoint)
+
+      // Upload via the appropriate API route
+      const response = await fetch(uploadEndpoint, {
         method: 'POST',
         body: formData,
       })
@@ -398,7 +556,10 @@ export default function AdminDashboard() {
       if (response.ok) {
         const result = await response.json()
         console.log('Upload successful:', result)
-        handleInputChange('coverId', result.url)
+
+        // Handle different response formats
+        const imageUrl = result.url || result.imagePath
+        handleInputChange('coverId', imageUrl)
         alert('Image uploaded successfully!')
       } else {
         const errorData = await response.json()
@@ -430,7 +591,7 @@ export default function AdminDashboard() {
   const handleDrop = async (event) => {
     event.preventDefault()
     setIsDragOver(false)
-    
+
     const files = event.dataTransfer.files
     if (files.length > 0) {
       await uploadFile(files[0])
@@ -439,8 +600,8 @@ export default function AdminDashboard() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
       </div>
     )
   }
@@ -454,23 +615,25 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Admin Dashboard</h1>
+      <div className="border-b border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 items-center justify-between">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Admin Dashboard
+            </h1>
             <div className="flex items-center space-x-4">
               <Link
                 href="/"
-                className="flex items-center px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
+                className="flex items-center px-4 py-2 text-gray-700 transition-colors duration-200 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400"
               >
-                <Home className="w-5 h-5 mr-2" />
+                <Home className="mr-2 h-5 w-5" />
                 View Site
               </Link>
               <button
                 onClick={handleLogout}
-                className="flex items-center px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 transition-colors duration-200"
+                className="flex items-center px-4 py-2 text-gray-700 transition-colors duration-200 hover:text-red-600 dark:text-gray-300 dark:hover:text-red-400"
               >
-                <LogOut className="w-5 h-5 mr-2" />
+                <LogOut className="mr-2 h-5 w-5" />
                 Logout
               </button>
             </div>
@@ -478,7 +641,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Tabs */}
         <div className="mb-8">
           <div className="border-b border-gray-200 dark:border-gray-700">
@@ -487,10 +650,10 @@ export default function AdminDashboard() {
                 <button
                   key={value}
                   onClick={() => setActiveTab(value)}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                  className={`border-b-2 px-1 py-2 text-sm font-medium transition-colors duration-200 ${
                     activeTab === value
                       ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'
                   }`}
                 >
                   {key.charAt(0) + key.slice(1).toLowerCase()}
@@ -501,32 +664,59 @@ export default function AdminDashboard() {
         </div>
 
         {/* Content */}
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid gap-8 lg:grid-cols-3">
           {/* List */}
           <div className="lg:col-span-2">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+            <div className="rounded-lg bg-white shadow dark:bg-gray-800">
+              <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-700">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                   {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
                 </h2>
-                <button
-                  onClick={handleCreate}
-                  className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add New
-                </button>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={handleCreate}
+                    className="flex items-center rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors duration-200 hover:bg-blue-700"
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add New
+                  </button>
+                  {activeTab === TABS.EXPERIENCE && (
+                    <>
+                      <button
+                        onClick={handleCleanupExperience}
+                        className="flex items-center rounded-lg bg-yellow-600 px-4 py-2 text-white transition-colors duration-200 hover:bg-yellow-700"
+                      >
+                        <Save className="mr-2 h-4 w-4" />
+                        Fix Data
+                      </button>
+                      <button
+                        onClick={handleFixDatabase}
+                        className="flex items-center rounded-lg bg-red-600 px-4 py-2 text-white transition-colors duration-200 hover:bg-red-700"
+                      >
+                        <Save className="mr-2 h-4 w-4" />
+                        Rebuild DB
+                      </button>
+                      <button
+                        onClick={handleForceRebuild}
+                        className="flex items-center rounded-lg bg-purple-600 px-4 py-2 text-white transition-colors duration-200 hover:bg-purple-700"
+                      >
+                        <Save className="mr-2 h-4 w-4" />
+                        FORCE Rebuild
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
-              
+
               <div className="divide-y divide-gray-200 dark:divide-gray-700">
-                {(activeTab === TABS.PROJECTS || activeTab === TABS.TRAININGS) ? (
+                {activeTab === TABS.PROJECTS || activeTab === TABS.TRAININGS ? (
                   <DndContext
                     sensors={sensors}
                     collisionDetection={closestCenter}
                     onDragEnd={handleDragEnd}
                   >
                     <SortableContext
-                      items={currentData.map(item => item.id)}
+                      items={currentData.map((item) => item.id)}
                       strategy={verticalListSortingStrategy}
                     >
                       {currentData.map((item) => (
@@ -561,17 +751,17 @@ export default function AdminDashboard() {
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="bg-white dark:bg-gray-800 rounded-lg shadow p-6"
+                className="rounded-lg bg-white p-6 shadow dark:bg-gray-800"
               >
-                <div className="flex items-center justify-between mb-4">
+                <div className="mb-4 flex items-center justify-between">
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                     {editingItem ? 'Edit' : 'Create'} {activeTab.slice(0, -1)}
                   </h3>
                   <button
                     onClick={() => setShowForm(false)}
-                    className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
+                    className="p-2 text-gray-400 transition-colors duration-200 hover:text-gray-600 dark:hover:text-gray-300"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="h-4 w-4" />
                   </button>
                 </div>
 
@@ -579,95 +769,113 @@ export default function AdminDashboard() {
                   {activeTab === TABS.PROJECTS && (
                     <>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                           Title
                         </label>
                         <input
                           type="text"
                           value={formData.title || ''}
-                          onChange={(e) => handleInputChange('title', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          onChange={(e) =>
+                            handleInputChange('title', e.target.value)
+                          }
+                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                           placeholder="Project title"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                           Summary
                         </label>
                         <textarea
                           value={formData.summary || ''}
-                          onChange={(e) => handleInputChange('summary', e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange('summary', e.target.value)
+                          }
                           rows={2}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                           placeholder="Brief project summary"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                           Description
                         </label>
                         <textarea
                           value={formData.description || ''}
-                          onChange={(e) => handleInputChange('description', e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange('description', e.target.value)
+                          }
                           rows={4}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                           placeholder="Detailed project description"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                           Tags (comma-separated)
                         </label>
                         <input
                           type="text"
                           value={formData.tags || ''}
-                          onChange={(e) => handleInputChange('tags', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          onChange={(e) =>
+                            handleInputChange('tags', e.target.value)
+                          }
+                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                           placeholder="React, Node.js, MongoDB"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                           Repository URL
                         </label>
                         <input
                           type="url"
                           value={formData.repoUrl || ''}
-                          onChange={(e) => handleInputChange('repoUrl', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          onChange={(e) =>
+                            handleInputChange('repoUrl', e.target.value)
+                          }
+                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                           placeholder="https://github.com/username/project"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                           Live URL
                         </label>
                         <input
                           type="url"
                           value={formData.liveUrl || ''}
-                          onChange={(e) => handleInputChange('liveUrl', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          onChange={(e) =>
+                            handleInputChange('liveUrl', e.target.value)
+                          }
+                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                           placeholder="https://project-demo.com"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                           Project Type
                         </label>
-         <select
-           value={formData.projectType || 'developed'}
-           onChange={(e) => handleInputChange('projectType', e.target.value)}
-           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-         >
-           <option value="developed">Personally Developed</option>
-           <option value="supervised">Supervised</option>
-         </select>
-         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-           Developed: You coded and built it yourself | Supervised: You planned, guided, and supervised the development team
-         </p>
+                        <select
+                          value={formData.projectType || 'developed'}
+                          onChange={(e) =>
+                            handleInputChange('projectType', e.target.value)
+                          }
+                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        >
+                          <option value="developed">
+                            Personally Developed
+                          </option>
+                          <option value="supervised">Supervised</option>
+                        </select>
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          Developed: You coded and built it yourself |
+                          Supervised: You planned, guided, and supervised the
+                          development team
+                        </p>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                           Cover Image
                         </label>
                         <div className="space-y-4">
@@ -675,26 +883,26 @@ export default function AdminDashboard() {
                           {formData.coverId && (
                             <div className="flex justify-center">
                               <img
-                                src={formData.coverId.startsWith('http') ? formData.coverId : formData.coverId}
+                                src={formData.coverId}
                                 alt="Cover preview"
-                                className="w-full max-w-sm h-48 object-cover rounded-lg border border-gray-300 dark:border-gray-600"
+                                className="h-48 w-full max-w-sm rounded-lg border border-gray-300 object-cover dark:border-gray-600"
                                 onError={(e) => {
                                   e.target.style.display = 'none'
                                   e.target.nextSibling.style.display = 'block'
                                 }}
                               />
-                              <div className="hidden w-full max-w-sm h-48 bg-gray-200 dark:bg-gray-700 rounded-lg border border-gray-300 dark:border-gray-600 flex items-center justify-center text-gray-500 dark:text-gray-400">
+                              <div className="flex hidden h-48 w-full max-w-sm items-center justify-center rounded-lg border border-gray-300 bg-gray-200 text-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-400">
                                 Image not found
                               </div>
                             </div>
                           )}
-                          
+
                           {/* File Upload */}
-                          <div 
-                            className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors duration-200 ${
-                              isDragOver 
-                                ? 'border-blue-400 dark:border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
-                                : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500'
+                          <div
+                            className={`rounded-lg border-2 border-dashed p-6 text-center transition-colors duration-200 ${
+                              isDragOver
+                                ? 'border-blue-400 bg-blue-50 dark:border-blue-500 dark:bg-blue-900/20'
+                                : 'border-gray-300 hover:border-blue-400 dark:border-gray-600 dark:hover:border-blue-500'
                             }`}
                             onDragOver={handleDragOver}
                             onDragLeave={handleDragLeave}
@@ -709,37 +917,57 @@ export default function AdminDashboard() {
                             />
                             <label
                               htmlFor="cover-upload"
-                              className="cursor-pointer flex flex-col items-center space-y-2"
+                              className="flex cursor-pointer flex-col items-center space-y-2"
                             >
-                              <Upload className={`w-8 h-8 ${isDragOver ? 'text-blue-500' : 'text-gray-400 dark:text-gray-500'}`} />
+                              <Upload
+                                className={`h-8 w-8 ${isDragOver ? 'text-blue-500' : 'text-gray-400 dark:text-gray-500'}`}
+                              />
                               <div className="text-sm text-gray-600 dark:text-gray-400">
-                                <span className="font-medium text-blue-600 dark:text-blue-400">Click to upload</span> or drag and drop
+                                <span className="font-medium text-blue-600 dark:text-blue-400">
+                                  Click to upload
+                                </span>{' '}
+                                or drag and drop
                               </div>
                               <div className="text-xs text-gray-500 dark:text-gray-500">
                                 PNG, JPG, GIF up to 10MB
                               </div>
                             </label>
                           </div>
-                          
+
                           {/* Manual Public ID Input (Optional) */}
                           <div>
-                            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                            <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">
                               Or enter Cloudinary Public ID manually:
                             </label>
                             <input
                               type="text"
                               value={formData.coverId || ''}
-                              onChange={(e) => handleInputChange('coverId', e.target.value)}
-                              className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                              placeholder="e.g., /images/project-cover.jpg"
+                              onChange={(e) =>
+                                handleInputChange('coverId', e.target.value)
+                              }
+                              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                              placeholder={
+                                process.env.NODE_ENV === 'production'
+                                  ? 'e.g., https://res.cloudinary.com/...'
+                                  : 'e.g., /images/project-cover.jpg'
+                              }
                             />
                           </div>
-                          
+
                           {/* Info */}
-                          <div className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 p-2 rounded">
-                            <div>📁 Upload Method: Automatic to public/images/</div>
-                            <div>✅ Files are automatically saved with unique names</div>
-                            <div>🔗 Image Path: {formData.coverId || 'Not set'}</div>
+                          <div className="rounded bg-gray-100 p-2 text-xs text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+                            <div>
+                              📁 Upload Method:{' '}
+                              {process.env.NODE_ENV === 'production'
+                                ? 'Cloudinary (Production)'
+                                : 'Local files (Development)'}
+                            </div>
+                            <div>
+                              ✅ Files are automatically saved with unique names
+                            </div>
+                            <div>
+                              🔗 Image Path: {formData.coverId || 'Not set'}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -749,26 +977,90 @@ export default function AdminDashboard() {
                   {activeTab === TABS.EXPERIENCE && (
                     <>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Role
+                        <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Role *
                         </label>
                         <input
                           type="text"
                           value={formData.role || ''}
-                          onChange={(e) => handleInputChange('role', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          onChange={(e) =>
+                            handleInputChange('role', e.target.value)
+                          }
+                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                          placeholder="e.g., Software Developer"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Company
+                        <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Company *
                         </label>
                         <input
                           type="text"
                           value={formData.company || ''}
-                          onChange={(e) => handleInputChange('company', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          onChange={(e) =>
+                            handleInputChange('company', e.target.value)
+                          }
+                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                          placeholder="e.g., Tech Company Inc."
                         />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Start Date *
+                        </label>
+                        <input
+                          type="date"
+                          value={formData.startDate || ''}
+                          onChange={(e) =>
+                            handleInputChange('startDate', e.target.value)
+                          }
+                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          End Date (Leave empty if current)
+                        </label>
+                        <input
+                          type="date"
+                          value={formData.endDate || ''}
+                          onChange={(e) =>
+                            handleInputChange('endDate', e.target.value)
+                          }
+                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Summary *
+                        </label>
+                        <textarea
+                          value={formData.summary || ''}
+                          onChange={(e) =>
+                            handleInputChange('summary', e.target.value)
+                          }
+                          rows={4}
+                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                          placeholder="Brief description of your role and responsibilities..."
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Key Achievements (One per line)
+                        </label>
+                        <textarea
+                          value={formData.highlights || ''}
+                          onChange={(e) =>
+                            handleInputChange('highlights', e.target.value)
+                          }
+                          rows={6}
+                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                          placeholder="• Led a team of 5 developers&#10;• Improved system performance by 40%&#10;• Implemented CI/CD pipeline"
+                        />
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          Enter each achievement on a new line. They will be
+                          displayed as bullet points.
+                        </p>
                       </div>
                     </>
                   )}
@@ -776,72 +1068,84 @@ export default function AdminDashboard() {
                   {activeTab === TABS.TRAININGS && (
                     <>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                           Title
                         </label>
                         <input
                           type="text"
                           value={formData.title || ''}
-                          onChange={(e) => handleInputChange('title', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          onChange={(e) =>
+                            handleInputChange('title', e.target.value)
+                          }
+                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                           placeholder="Training title"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                           Institution
                         </label>
                         <input
                           type="text"
                           value={formData.institution || ''}
-                          onChange={(e) => handleInputChange('institution', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          onChange={(e) =>
+                            handleInputChange('institution', e.target.value)
+                          }
+                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                           placeholder="Institution name"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                           Start Date
                         </label>
                         <input
                           type="date"
                           value={formData.startDate || ''}
-                          onChange={(e) => handleInputChange('startDate', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          onChange={(e) =>
+                            handleInputChange('startDate', e.target.value)
+                          }
+                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                           End Date (Optional)
                         </label>
                         <input
                           type="date"
                           value={formData.endDate || ''}
-                          onChange={(e) => handleInputChange('endDate', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          onChange={(e) =>
+                            handleInputChange('endDate', e.target.value)
+                          }
+                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                           Description (Optional)
                         </label>
                         <textarea
                           value={formData.description || ''}
-                          onChange={(e) => handleInputChange('description', e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange('description', e.target.value)
+                          }
                           rows={3}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                           placeholder="Training description"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                           Certificate URL (Optional)
                         </label>
                         <input
                           type="url"
                           value={formData.certificate || ''}
-                          onChange={(e) => handleInputChange('certificate', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          onChange={(e) =>
+                            handleInputChange('certificate', e.target.value)
+                          }
+                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                           placeholder="https://example.com/certificate.pdf"
                         />
                       </div>
@@ -851,25 +1155,29 @@ export default function AdminDashboard() {
                   {activeTab === TABS.TECH && (
                     <>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                           Label
                         </label>
                         <input
                           type="text"
                           value={formData.label || ''}
-                          onChange={(e) => handleInputChange('label', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          onChange={(e) =>
+                            handleInputChange('label', e.target.value)
+                          }
+                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                           Group
                         </label>
                         <input
                           type="text"
                           value={formData.group || ''}
-                          onChange={(e) => handleInputChange('group', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          onChange={(e) =>
+                            handleInputChange('group', e.target.value)
+                          }
+                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                         />
                       </div>
                     </>
@@ -878,25 +1186,29 @@ export default function AdminDashboard() {
                   {activeTab === TABS.LINKS && (
                     <>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                           Label
                         </label>
                         <input
                           type="text"
                           value={formData.label || ''}
-                          onChange={(e) => handleInputChange('label', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          onChange={(e) =>
+                            handleInputChange('label', e.target.value)
+                          }
+                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                           URL
                         </label>
                         <input
                           type="url"
                           value={formData.url || ''}
-                          onChange={(e) => handleInputChange('url', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          onChange={(e) =>
+                            handleInputChange('url', e.target.value)
+                          }
+                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                         />
                       </div>
                     </>
@@ -906,14 +1218,14 @@ export default function AdminDashboard() {
                 <div className="mt-6 flex space-x-3">
                   <button
                     onClick={handleSave}
-                    className="flex-1 flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200"
+                    className="flex flex-1 items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors duration-200 hover:bg-blue-700"
                   >
-                    <Save className="w-4 h-4 mr-2" />
+                    <Save className="mr-2 h-4 w-4" />
                     Save
                   </button>
                   <button
                     onClick={() => setShowForm(false)}
-                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
+                    className="rounded-lg border border-gray-300 px-4 py-2 text-gray-700 transition-colors duration-200 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
                   >
                     Cancel
                   </button>

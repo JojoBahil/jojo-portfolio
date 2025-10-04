@@ -10,26 +10,54 @@ export default function Trainings({ trainings = [] }) {
   const isInView = useInView(ref, { once: true, margin: '-100px' })
 
   const formatDate = (dateString) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short' 
+    // Handle both string and Date object inputs
+    const date =
+      typeof dateString === 'string' ? new Date(dateString) : dateString
+
+    // Use UTC methods to avoid timezone issues
+    const year = date.getUTCFullYear()
+    const month = date.getUTCMonth()
+
+    return new Date(year, month).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
     })
   }
 
   const getDuration = (startDate, endDate) => {
-    const start = new Date(startDate)
-    const end = endDate ? new Date(endDate) : new Date()
-    const diffTime = Math.abs(end - start)
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    
-    if (diffDays < 30) {
-      return `${diffDays} days`
-    } else if (diffDays < 365) {
-      const months = Math.floor(diffDays / 30)
+    // Handle both string and Date object inputs
+    const start =
+      typeof startDate === 'string' ? new Date(startDate) : startDate
+    const end = endDate
+      ? typeof endDate === 'string'
+        ? new Date(endDate)
+        : endDate
+      : new Date()
+
+    // Use UTC methods to avoid timezone issues
+    const startYear = start.getUTCFullYear()
+    const startMonth = start.getUTCMonth()
+    const startDay = start.getUTCDate()
+    const endYear = end.getUTCFullYear()
+    const endMonth = end.getUTCMonth()
+    const endDay = end.getUTCDate()
+
+    // Calculate the difference in days (inclusive)
+    const startDateObj = new Date(startYear, startMonth, startDay)
+    const endDateObj = new Date(endYear, endMonth, endDay)
+    const diffTime = Math.abs(endDateObj - startDateObj)
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1 // +1 for inclusive counting
+
+    // Ensure minimum of 1 day
+    const displayDays = Math.max(1, diffDays)
+
+    if (displayDays < 30) {
+      return `${displayDays} day${displayDays > 1 ? 's' : ''}`
+    } else if (displayDays < 365) {
+      const months = Math.round(displayDays / 30)
       return `${months} month${months > 1 ? 's' : ''}`
     } else {
-      const years = Math.floor(diffDays / 365)
+      const years = Math.round(displayDays / 365)
       return `${years} year${years > 1 ? 's' : ''}`
     }
   }
@@ -131,25 +159,24 @@ export default function Trainings({ trainings = [] }) {
                   </span>
                 </div>
               </div>
-              
-              {training.certificate && (
-                <motion.a
+            </div>
+
+            {training.certificate && (
+              <div className="border-t border-gray-100 pt-4 dark:border-gray-700">
+                <a
                   href={training.certificate}
                   target="_blank"
                   rel="noopener noreferrer"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="ml-4 inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white text-sm font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+                  className="inline-flex items-center font-medium text-blue-600 transition-colors duration-200 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                 >
-                  <ExternalLink className="w-4 h-4 mr-1" />
-                  Certificate
-                </motion.a>
-              )}
-            </div>
+                  <ExternalLink className="mr-2 h-4 w-4" />
+                  View Certificate
+                </a>
+              </div>
+            )}
           </div>
         </motion.div>
       ))}
     </div>
   )
 }
-
