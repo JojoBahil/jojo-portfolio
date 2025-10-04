@@ -25,6 +25,8 @@ model Project {
   order       Int      @default(0) // For custom ordering
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@map("projects")
 }
 
 model Experience {
@@ -37,6 +39,8 @@ model Experience {
   highlights  String   @db.Text @default("[]") // JSON string of string[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@map("experiences")
 }
 
 model Tech {
@@ -44,6 +48,8 @@ model Tech {
   label  String @unique
   level  String?
   group  String?
+
+  @@map("tech")
 }
 
 model Media {
@@ -52,12 +58,16 @@ model Media {
   publicId  String
   type      String   // "image" | "video"
   createdAt DateTime @default(now())
+
+  @@map("media")
 }
 
 model Link {
   id    String @id @default(cuid())
   label String
   url   String
+
+  @@map("links")
 }
 
 model Training {
@@ -71,6 +81,8 @@ model Training {
   order       Int      @default(0) // For custom ordering
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@map("trainings")
 }
 
 model Visitor {
@@ -80,4 +92,6 @@ model Visitor {
   referer   String?
   visitedAt DateTime @default(now())
   createdAt DateTime @default(now())
+
+  @@map("visitors")
 }

@@ -1,5 +1,5 @@
 -- CreateTable
-CREATE TABLE `Visitor` (
+CREATE TABLE `visitors` (
     `id` VARCHAR(191) NOT NULL,
     `ipAddress` VARCHAR(191) NOT NULL,
     `userAgent` VARCHAR(191) NULL,
