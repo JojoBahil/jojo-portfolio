@@ -541,9 +541,8 @@ export default function AdminDashboard() {
       
       formData.append('filename', uniqueFileName)
 
-      // Determine which upload endpoint to use based on environment
-      const isProduction = process.env.NODE_ENV === 'production'
-      const uploadEndpoint = isProduction ? '/api/upload' : '/api/upload-local'
+      // Always use local file upload
+      const uploadEndpoint = '/api/upload-local'
 
 
       // Upload via the appropriate API route
@@ -557,12 +556,17 @@ export default function AdminDashboard() {
 
         // Handle different response formats
         const imageUrl = result.url || result.imagePath
+        if (!imageUrl) {
+          alert('Upload successful but no image URL returned. Please try again.')
+          return
+        }
         handleInputChange('coverId', imageUrl)
         alert('Image uploaded successfully!')
       } else {
         const errorData = await response.json()
         console.error('Upload failed:', errorData)
-        alert(`Upload failed: ${errorData.error}`)
+        const errorMessage = errorData.details ? `${errorData.error}: ${errorData.details}` : errorData.error
+        alert(`Upload failed: ${errorMessage}`)
       }
     } catch (error) {
       console.error('Error uploading image:', error)
@@ -947,21 +951,14 @@ export default function AdminDashboard() {
                                 handleInputChange('coverId', e.target.value)
                               }
                               className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                              placeholder={
-                                process.env.NODE_ENV === 'production'
-                                  ? 'e.g., https://res.cloudinary.com/...'
-                                  : 'e.g., /images/project-cover.jpg'
-                              }
+                              placeholder="e.g., /images/project-cover.jpg"
                             />
                           </div>
 
                           {/* Info */}
                           <div className="rounded bg-gray-100 p-2 text-xs text-gray-500 dark:bg-gray-800 dark:text-gray-400">
                             <div>
-                              📁 Upload Method:{' '}
-                              {process.env.NODE_ENV === 'production'
-                                ? 'Cloudinary (Production)'
-                                : 'Local files (Development)'}
+                              📁 Upload Method: Local files
                             </div>
                             <div>
                               ✅ Files are automatically saved with unique names

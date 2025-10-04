@@ -73,10 +73,8 @@ export default function Trainings({ trainings = [] }) {
     
     if (diffDays < 30) {
       return 'from-blue-500 to-indigo-600' // Recent - blue gradient
-    } else if (diffDays < 365) {
-      return 'from-purple-500 to-pink-600' // Recent year - purple gradient
     } else {
-      return 'from-gray-500 to-slate-600' // Older - gray gradient
+      return 'from-gray-500 to-slate-600' // Completed - gray gradient
     }
   }
 
@@ -88,7 +86,6 @@ export default function Trainings({ trainings = [] }) {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
     
     if (diffDays < 30) return 'Recently Completed'
-    if (diffDays < 365) return 'Completed This Year'
     return 'Completed'
   }
 

@@ -50,11 +50,8 @@ export async function POST(request) {
       }, { status: 500 })
     }
 
-    // Use relative path for local development, absolute URL for production
-    const isProduction = process.env.NODE_ENV === 'production'
-    const imagePath = isProduction 
-      ? `${process.env.NEXT_PUBLIC_SITE_URL}/images/${filename}`
-      : `/images/${filename}`
+    // Use relative path for all environments
+    const imagePath = `/images/${filename}`
 
 
     return NextResponse.json({
